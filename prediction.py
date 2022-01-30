@@ -19,7 +19,7 @@ parser.add_argument('--dataset', help='dataset name', choices=__datasets__.keys(
 parser.add_argument('--datapath', required=True, help='data path')
 parser.add_argument('--testlist', required=True, help='testing list')
 parser.add_argument('--loadckpt', required=True, help='load the weights from a specific checkpoint')
-parser.add_argument('--colored', default=1, help='save colored or save for benchmark submission')
+parser.add_argument('--colored', action='store_true', help='save colored or save for benchmark submission')
 
 # parse arguments
 args = parser.parse_args()
@@ -43,7 +43,9 @@ model.load_state_dict(state_dict['model'])
 def test(args):
     print("Generating the disparity maps...")
 
-    os.makedirs('./predictions', exist_ok=True)
+    PRED_PATH = "./predictions/{}/".format(args.model)
+
+    os.makedirs(PRED_PATH, exist_ok=True)
 
     for batch_idx, sample in enumerate(TestImgLoader):
 
@@ -57,9 +59,16 @@ def test(args):
 
             assert len(disp_est.shape) == 2
 
-            disp_est = np.array(disp_est[top_pad:, :-right_pad], dtype=np.float32)
+            # print('disp_est.shape = {}'.format(disp_est.shape))
+
+            # disp_est = np.array(disp_est[top_pad:, :-right_pad], dtype=np.float32)
+
+            # print('disp_est = {}'.format(disp_est))
+
             name = fn.split('/')
-            fn = os.path.join("predictions", '_'.join(name[2:]))
+            fn = os.path.join(PRED_PATH, '_'.join(name[2:]))
+
+            print('fn = {}'.format(fn))
 
             if float(args.colored) == 1:
                 disp_est = kitti_colormap(disp_est)
